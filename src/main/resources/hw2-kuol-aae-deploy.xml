@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<analysisEngineDeploymentDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <name>HW2 AAE</name>
+  <description>Deploys remotely deployed HW2 AAE.</description>
+  <version/>
+  <vendor/>
+  <deployment protocol="jms" provider="activemq">
+    <service>
+      <inputQueue endpoint="HW2AAE" brokerURL="tcp://localhost:61616" prefetch="0"/>
+      <topDescriptor>
+<import location="hw2-kuol-aae.xml"/>
+      </topDescriptor>
+    </service>
+  </deployment>
+</analysisEngineDeploymentDescription>

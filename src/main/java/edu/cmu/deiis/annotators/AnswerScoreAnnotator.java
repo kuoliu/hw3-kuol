@@ -8,6 +8,7 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.FSIndex;
 import org.apache.uima.jcas.*;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.cleartk.ne.type.NamedEntityMention;
 
 import edu.cmu.deiis.types.*;
 
@@ -43,11 +44,25 @@ public class AnswerScoreAnnotator extends JCasAnnotator_ImplBase {
     Iterator<Answer> aIter = aIndex.iterator();
     while (aIter.hasNext()) {
       Answer ans = aIter.next();
+      int begin = ans.getBegin();
+      int end = ans.getEnd();
+      int entityCnt = 0;
       String[] ansStrs = ans.getCoveredText().split(splitPattern);
       int cnt = 0;
       for (int i = 0; i < ansStrs.length; ++i) {
         if (ques.indexOf(ansStrs[i]) >= 0)
           ++cnt;
+      }
+      FSIndex eIndex = aJCas.getAnnotationIndex(NamedEntityMention.type);
+      Iterator<NamedEntityMention> eIter = eIndex.iterator();
+      while(eIter.hasNext()){
+      	NamedEntityMention entity = eIter.next();
+      	if(entity.getBegin() >= begin && entity.getEnd() <= end){
+      		if(ques.indexOf(entity.getCoveredText()) >= 0){
+      			++ cnt;
+      			++ entityCnt;
+      		}
+      	}
       }
       AnswerScore ansScore = new AnswerScore(aJCas);
       ansScore.setBegin(ans.getBegin());
@@ -55,10 +70,11 @@ public class AnswerScoreAnnotator extends JCasAnnotator_ImplBase {
       ansScore.setCasProcessorId(casProcessId);
       ansScore.setConfidence(confidence);
       int len = Math.max(ansStrs.length, quesStrs.length);
-      ansScore.setScore((float) cnt / (float) len);
+      ansScore.setScore((float) cnt / (float) len + entityCnt);
       ansScore.setAnswer(ans);
       ansScore.addToIndexes();
     }
   }
 
 }
+
